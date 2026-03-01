@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Orden de Trabajo - OT</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js" crossorigin="anonymous"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h1 {
+            font-size: 1.8rem;
+            color: #1e293b;
+        }
+
+        .header-title svg {
+            width: 32px;
+            height: 32px;
+            color: #2563eb;
+        }
+
+        .header-subtitle {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 44px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-primary:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        .btn-outline:hover {
+            background: #f8fafc;
+        }
+
+        .btn-danger {
+            background: white;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .btn-danger:hover {
+            background: #fef2f2;
+        }
+
+        /* Card */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        /* Form Grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Section Title */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 24px 0 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .badge {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Separator */
+        .separator {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 20px 0;
+        }
+
+        /* Toggle Buttons */
+        .toggle-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 30px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 44px;
+        }
+
+        .toggle-btn.active-si {
+            background: #16a34a;
+            color: white;
+            border-color: #16a34a;
+        }
+
+        .toggle-btn.active-no {
+            background: #dc2626;
+            color: white;
+            border-color: #dc2626;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        td input {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        td input:focus {
+            outline: none;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .total-row {
+            background: #f1f5f9 !important;
+            font-weight: 600;
+        }
+
+        /* Print View */
+        .print-view {
+            display: none;
+            background: white;
+            padding: 15mm;
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        /* Mobile Footer */
+        .mobile-footer {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            padding: 12px 16px;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            background: #16a34a;
+        }
+
+        .toast.error {
+            background: #dc2626;
+        }
+
+        .toast.info {
+            background: #2563eb;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+                padding-bottom: 90px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-title h1 {
+                font-size: 1.4rem;
+            }
+
+            .actions {
+                display: none;
+            }
+
+            .mobile-footer {
+                display: flex;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card-body {
+                padding: 16px;
+            }
+
+            th, td {
+                padding: 8px;
+                font-size: 0.875rem;
+            }
+
+            .toggle-btn {
+                flex: 1;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .print-view {
+                display: block !important;
+            }
+
+            .mobile-footer {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <div class="container no-print">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <div class="header-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <div>
+                        <h1>Orden de Trabajo</h1>
+                        <p class="header-subtitle">Sistema de gestión de órdenes de trabajo</p>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary" id="btn-pdf" onclick="generarPDF()">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                    </svg>
+                    <span id="btn-pdf-text">Guardar PDF</span>
+                </button>
+                <button class="btn btn-outline" onclick="imprimir()">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                    </svg>
+                    Imprimir
+                </button>
+                <button class="btn btn-danger" onclick="limpiarFormulario()">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Limpiar
+                </button>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>ORDEN DE TRABAJO</h2>
+            </div>
+            <div class="card-body">
+                <!-- Información General -->
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="equipo">Equipo</label>
+                        <input type="text" id="equipo" placeholder="Nombre del equipo">
+                    </div>
+                    <div class="form-group">
+                        <label for="area">Área</label>
+                        <input type="text" id="area" placeholder="Área de trabajo">
+                    </div>
+                    <div class="form-group">
+                        <label for="horometro">Horómetro</label>
+                        <input type="text" id="horometro" placeholder="Horómetro">
+                    </div>
+                    <div class="form-group">
+                        <label for="otNo">OT No</label>
+                        <input type="text" id="otNo" placeholder="Número de OT">
+                    </div>
+                </div>
+
+                <!-- Fechas -->
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="fechaInicio">Fecha Inicio</label>
+                        <input type="date" id="fechaInicio">
+                    </div>
+                    <div class="form-group">
+                        <label for="horaInicio">Hora Inicio</label>
+                        <input type="time" id="horaInicio">
+                    </div>
+                    <div class="form-group">
+                        <label for="fechaFinal">Fecha Final</label>
+                        <input type="date" id="fechaFinal">
+                    </div>
+                    <div class="form-group">
+                        <label for="horaFinal">Hora Final</label>
+                        <input type="time" id="horaFinal">
+                    </div>
+                </div>
+
+                <div class="form-grid" style="grid-template-columns: repeat(2, 1fr);">
+                    <div class="form-group">
+                        <label for="turno">Turno</label>
+                        <input type="text" id="turno" placeholder="Turno de trabajo">
+                    </div>
+                    <div class="form-group">
+                        <label for="supervisor">Nombre Supervisor</label>
+                        <input type="text" id="supervisor" placeholder="Nombre del supervisor">
+                    </div>
+                </div>
+
+                <div class="separator"></div>
+
+                <!-- Clasificación -->
+                <div class="section-title">
+                    <span class="badge">Clasificación</span>
+                </div>
+                <div class="form-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="form-group">
+                        <label for="problemGroup">Problem Group</label>
+                        <input type="text" id="problemGroup" placeholder="Grupo del problema">
+                    </div>
+                    <div class="form-group">
+                        <label for="problem">Problem</label>
+                        <input type="text" id="problem" placeholder="Problema identificado">
+                    </div>
+                    <div class="form-group">
+                        <label for="cause">Cause</label>
+                        <input type="text" id="cause" placeholder="Causa raíz">
+                    </div>
+                </div>
+
+                <div class="separator"></div>
+
+                <!-- Descripción y Pendientes -->
+                <div class="form-grid" style="grid-template-columns: repeat(2, 1fr);">
+                    <div class="form-group">
+                        <label for="descripcion">Descripción del Trabajo Efectuado</label>
+                        <textarea id="descripcion" placeholder="Diligencie la OT siguiendo los pasos descritos..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="pendientes">Pendientes</label>
+                        <textarea id="pendientes" placeholder="Actividades pendientes..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Cerrar Tarea -->
+                <div style="margin: 20px 0;">
+                    <label style="font-weight: 600; color: #334155; margin-bottom: 10px; display: block;">CERRAR TAREA</label>
+                    <div class="toggle-group">
+                        <button type="button" class="toggle-btn" id="btn-si" onclick="setCerrarTarea('SI')">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            SI
+                        </button>
+                        <button type="button" class="toggle-btn" id="btn-no" onclick="setCerrarTarea('NO')">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            NO
+                        </button>
+                    </div>
+                </div>
+
+                <div class="separator"></div>
+
+                <!-- Tabla de Técnicos -->
+                <div class="section-title">NOMBRE TÉCNICOS</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre Técnico</th>
+                                <th style="width: 120px;"># Empleado</th>
+                                <th style="width: 80px;">H.H</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-tecnicos">
+                            <!-- Filas generadas por JS -->
+                        </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td colspan="2" style="text-align: right;">HORAS HOMBRE TOTALES</td>
+                                <td id="total-horas">0.0</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Footer -->
+    <div class="mobile-footer no-print">
+        <button class="btn btn-primary" id="btn-pdf-mobile" style="flex: 1;" onclick="generarPDF()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+            </svg>
+            <span id="btn-pdf-mobile-text">PDF</span>
+        </button>
+        <button class="btn btn-outline" style="flex: 1;" onclick="imprimir()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+            </svg>
+            Imprimir
+        </button>
+    </div>
+
+    <!-- Print View (Hidden) -->
+    <div id="print-view" class="print-view">
+        <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid black; padding-bottom: 15px;">
+            <h1 style="font-size: 22px; font-weight: bold;">ORDEN DE TRABAJO</h1>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px; font-size: 12px;">
+            <div style="border: 1px solid black; padding: 8px;">
+                <strong style="display: block; font-size: 10px;">Equipo:</strong>
+                <span id="print-equipo">-</span>
+            </div>
+            <div style="border: 1px solid black; padding: 8px;">
+                <strong style="display: block; font-size: 10px;">Área:</strong>
+                <span id="print-area">-</span>
+            </div>
+            <div style="border: 1px solid black; padding: 8px;">
+                <strong style="display: block; font-size: 10px;">Horómetro:</strong>
+                <span id="print-horometro">-</span>
+            </div>
+            <div style="border: 1px solid black; padding: 8px;">
+                <strong style="display: block; font-size: 10px;">OT No:</strong>
+                <span id="print-otNo">-</span>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px; font-size: 12px;">
+            <div style="border: 1px solid black; padding: 8px;">
+                <strong style="display: block; font-size: 10px;">Fecha/Hora Inicio:</strong>
+                <span id="print-inicio">-</span>
+            </div>
+            <div style="border: 1px solid black; padding: 8px;">
+                <strong style="display: block; font-size: 10px;">Fecha/Hora Final:</strong>
+                <span id="print-final">-</span>
+            </div>
+            <div style="border: 1px solid black; padding: 8px;">
+                <strong style="display: block; font-size: 10px;">Turno:</strong>
+                <span id="print-turno">-</span>
+            </div>
+            <div style="border: 1px solid black; padding: 8px;">
+                <strong style="display: block; font-size: 10px;">Supervisor:</strong>
+                <span id="print-supervisor">-</span>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 10px; font-size: 12px;">
+            <div style="border: 1px solid black; padding: 8px;">
+                <strong style="display: block; font-size: 10px;">Problem Group:</strong>
+                <span id="print-problemGroup">-</span>
+            </div>
+            <div style="border: 1px solid black; padding: 8px;">
+                <strong style="display: block; font-size: 10px;">Problem:</strong>
+                <span id="print-problem">-</span>
+            </div>
+            <div style="border: 1px solid black; padding: 8px;">
+                <strong style="display: block; font-size: 10px;">Cause:</strong>
+                <span id="print-cause">-</span>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-bottom: 15px;">
+            <div style="border: 1px solid black; padding: 10px; min-height: 100px; font-size: 12px;">
+                <strong style="display: block; font-size: 10px; margin-bottom: 5px;">Descripción del Trabajo Efectuado:</strong>
+                <span id="print-descripcion" style="white-space: pre-wrap;">-</span>
+            </div>
+            <div style="border: 1px solid black; padding: 10px; min-height: 100px; font-size: 12px;">
+                <strong style="display: block; font-size: 10px; margin-bottom: 5px;">Pendientes:</strong>
+                <span id="print-pendientes" style="white-space: pre-wrap;">-</span>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 15px; font-size: 12px;">
+            <strong>CERRAR TAREA:</strong>
+            <span style="margin-left: 15px;">
+                [ <span id="print-si"> </span> ] SI &nbsp;&nbsp;
+                [ <span id="print-no"> </span> ] NO
+            </span>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            <thead>
+                <tr style="background: #f0f0f0;">
+                    <th style="border: 1px solid black; padding: 8px; text-align: left;">NOMBRE TÉCNICOS</th>
+                    <th style="border: 1px solid black; padding: 8px; text-align: left; width: 100px;"># EMPLEADO</th>
+                    <th style="border: 1px solid black; padding: 8px; text-align: left; width: 60px;">H.H</th>
+                </tr>
+            </thead>
+            <tbody id="print-tabla-tecnicos">
+                <!-- Generado por JS -->
+            </tbody>
+            <tfoot>
+                <tr style="background: #f0f0f0; font-weight: bold;">
+                    <td colspan="2" style="border: 1px solid black; padding: 8px; text-align: right;">HORAS HOMBRE TOTALES</td>
+                    <td id="print-total-horas" style="border: 1px solid black; padding: 8px;">0.0</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #ccc; text-align: center; font-size: 10px; color: #666;">
+            <p>Orden de Trabajo - Generado el <span id="print-fecha"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // Verificar que las librerías estén cargadas
+        let jsPDFLoaded = false;
+        let html2canvasLoaded = false;
+
+        function checkLibraries() {
+            if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF) {
+                jsPDFLoaded = true;
+            }
+            if (typeof html2canvas !== 'undefined') {
+                html2canvasLoaded = true;
+            }
+            return jsPDFLoaded && html2canvasLoaded;
+        }
+
+        // Mostrar toast
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        const { jsPDF } = window.jspdf || {};
+        let cerrarTarea = '';
+
+        // Inicializar tabla de técnicos
+        function inicializarTabla() {
+            const tbody = document.getElementById('tabla-tecnicos');
+            tbody.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="text" class="tecnico-nombre" placeholder="Técnico ${i + 1}"></td>
+                    <td><input type="text" class="tecnico-empleado" placeholder="#"></td>
+                    <td><input type="number" class="tecnico-hh" placeholder="0.0" step="0.5" onchange="calcularTotal()"></td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        // Calcular total de horas
+        function calcularTotal() {
+            const hhInputs = document.querySelectorAll('.tecnico-hh');
+            let total = 0;
+            hhInputs.forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+            document.getElementById('total-horas').textContent = total.toFixed(1);
+        }
+
+        // Set cerrar tarea
+        function setCerrarTarea(valor) {
+            cerrarTarea = valor;
+            document.getElementById('btn-si').className = 'toggle-btn' + (valor === 'SI' ? ' active-si' : '');
+            document.getElementById('btn-no').className = 'toggle-btn' + (valor === 'NO' ? ' active-no' : '');
+        }
+
+        // Formatear fecha/hora
+        function formatDateTime(date, time) {
+            if (!date && !time) return '-';
+            if (date && !time) return date;
+            if (!date && time) return time;
+            return `${date} ${time}`;
+        }
+
+        // Actualizar vista de impresión
+        function actualizarPrintView() {
+            document.getElementById('print-equipo').textContent = document.getElementById('equipo').value || '-';
+            document.getElementById('print-area').textContent = document.getElementById('area').value || '-';
+            document.getElementById('print-horometro').textContent = document.getElementById('horometro').value || '-';
+            document.getElementById('print-otNo').textContent = document.getElementById('otNo').value || '-';
+            document.getElementById('print-inicio').textContent = formatDateTime(
+                document.getElementById('fechaInicio').value,
+                document.getElementById('horaInicio').value
+            );
+            document.getElementById('print-final').textContent = formatDateTime(
+                document.getElementById('fechaFinal').value,
+                document.getElementById('horaFinal').value
+            );
+            document.getElementById('print-turno').textContent = document.getElementById('turno').value || '-';
+            document.getElementById('print-supervisor').textContent = document.getElementById('supervisor').value || '-';
+            document.getElementById('print-problemGroup').textContent = document.getElementById('problemGroup').value || '-';
+            document.getElementById('print-problem').textContent = document.getElementById('problem').value || '-';
+            document.getElementById('print-cause').textContent = document.getElementById('cause').value || '-';
+            document.getElementById('print-descripcion').textContent = document.getElementById('descripcion').value || '-';
+            document.getElementById('print-pendientes').textContent = document.getElementById('pendientes').value || '-';
+            document.getElementById('print-si').textContent = cerrarTarea === 'SI' ? 'X' : ' ';
+            document.getElementById('print-no').textContent = cerrarTarea === 'NO' ? 'X' : ' ';
+            document.getElementById('print-fecha').textContent = new Date().toLocaleString();
+
+            // Tabla de técnicos
+            const printTbody = document.getElementById('print-tabla-tecnicos');
+            printTbody.innerHTML = '';
+            const nombres = document.querySelectorAll('.tecnico-nombre');
+            const empleados = document.querySelectorAll('.tecnico-empleado');
+            const hh = document.querySelectorAll('.tecnico-hh');
+            let total = 0;
+
+            for (let i = 0; i < 5; i++) {
+                const tr = document.createElement('tr');
+                const hhValue = hh[i]?.value || '';
+                if (hhValue) total += parseFloat(hhValue) || 0;
+                tr.innerHTML = `
+                    <td style="border: 1px solid black; padding: 8px;">${nombres[i]?.value || '-'}</td>
+                    <td style="border: 1px solid black; padding: 8px;">${empleados[i]?.value || '-'}</td>
+                    <td style="border: 1px solid black; padding: 8px;">${hhValue || '-'}</td>
+                `;
+                printTbody.appendChild(tr);
+            }
+            document.getElementById('print-total-horas').textContent = total.toFixed(1);
+        }
+
+        // Generar PDF - Versión mejorada
+        async function generarPDF() {
+            // Verificar librerías
+            if (!checkLibraries()) {
+                showToast('Cargando librerías... Por favor espere un momento e intente nuevamente.', 'info');
+                setTimeout(() => location.reload(), 2000);
+                return;
+            }
+
+            const btnPdf = document.getElementById('btn-pdf');
+            const btnPdfMobile = document.getElementById('btn-pdf-mobile');
+            const btnPdfText = document.getElementById('btn-pdf-text');
+            const btnPdfMobileText = document.getElementById('btn-pdf-mobile-text');
+
+            // Deshabilitar botones
+            if (btnPdf) btnPdf.disabled = true;
+            if (btnPdfMobile) btnPdfMobile.disabled = true;
+            if (btnPdfText) btnPdfText.textContent = 'Generando...';
+            if (btnPdfMobileText) btnPdfMobileText.textContent = '...';
+
+            try {
+                showToast('Generando PDF...', 'info');
+                actualizarPrintView();
+                
+                const element = document.getElementById('print-view');
+                
+                // Esperar a que el DOM se actualice
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    width: element.offsetWidth,
+                    height: element.offsetHeight
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                
+                // Crear PDF en formato A4
+                const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
+                
+                const pdfWidth = 210; // A4 width in mm
+                const pdfHeight = 297; // A4 height in mm
+                const margin = 10;
+                
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+                
+                // Calcular escala para que quepa en la página
+                const availableWidth = pdfWidth - (margin * 2);
+                const availableHeight = pdfHeight - (margin * 2);
+                
+                const scaleX = availableWidth / (imgWidth * 0.264583); // convert px to mm
+                const scaleY = availableHeight / (imgHeight * 0.264583);
+                const scale = Math.min(scaleX, scaleY, 1);
+                
+                const finalWidth = imgWidth * 0.264583 * scale;
+                const finalHeight = imgHeight * 0.264583 * scale;
+                
+                const x = (pdfWidth - finalWidth) / 2;
+                const y = margin;
+                
+                pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
+                
+                const otNo = document.getElementById('otNo').value || 'sin_numero';
+                const fecha = new Date().toISOString().split('T')[0];
+                
+                pdf.save(`OT_${otNo}_${fecha}.pdf`);
+                
+                showToast('PDF generado correctamente', 'success');
+            } catch (error) {
+                console.error('Error generando PDF:', error);
+                showToast('Error al generar PDF: ' + error.message, 'error');
+            } finally {
+                // Rehabilitar botones
+                if (btnPdf) btnPdf.disabled = false;
+                if (btnPdfMobile) btnPdfMobile.disabled = false;
+                if (btnPdfText) btnPdfText.textContent = 'Guardar PDF';
+                if (btnPdfMobileText) btnPdfMobileText.textContent = 'PDF';
+            }
+        }
+
+        // Imprimir
+        function imprimir() {
+            actualizarPrintView();
+            window.print();
+        }
+
+        // Limpiar formulario
+        function limpiarFormulario() {
+            if (confirm('¿Está seguro de limpiar todos los campos?')) {
+                document.querySelectorAll('input, textarea').forEach(input => input.value = '');
+                setCerrarTarea('');
+                calcularTotal();
+                showToast('Formulario limpiado', 'success');
+            }
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            inicializarTabla();
+            
+            // Verificar librerías después de un momento
+            setTimeout(() => {
+                if (!checkLibraries()) {
+                    showToast('Cargando librerías...', 'info');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
